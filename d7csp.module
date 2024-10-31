@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Implement hooks and callbacks for the csp_nonce module.
+ * Implement hooks and callbacks for the d7csp module.
  */
 
 /**
  * Generate a nonce for the current page load.
  */
-function csp_nonce(): string {
+function d7csp_nonce(): string {
   $nonce = &drupal_static(__FUNCTION__);
   if (!$nonce) {
     $nonce = drupal_random_key(16);
@@ -19,8 +19,8 @@ function csp_nonce(): string {
 /**
  * Implements hook_element_info_alter().
  */
-function csp_nonce_element_info_alter(&$type) {
-  $type['scripts']['#pre_render'][] = 'csp_nonce_pre_render_scripts';
+function d7csp_element_info_alter(&$type) {
+  $type['scripts']['#pre_render'][] = 'd7csp_pre_render_scripts';
 }
 
 /**
@@ -28,8 +28,8 @@ function csp_nonce_element_info_alter(&$type) {
  *
  * Add a nonce attribute to the script tag.
  */
-function csp_nonce_pre_render_scripts(array $elements) {
-  $nonce = csp_nonce();
+function d7csp_pre_render_scripts(array $elements) {
+  $nonce = d7csp_nonce();
   foreach (['scripts', 'settings'] as $type) {
     foreach (element_children($elements[$type]) as $key) {
       $elements[$type][$key]['#attributes']['nonce'] = $nonce;
@@ -43,29 +43,29 @@ function csp_nonce_pre_render_scripts(array $elements) {
  *
  * @return array
  */
-function csp_nonce_hosts(){
+function d7csp_hosts(){
   $hosts = &drupal_static(__FUNCTION__);
   if (is_null($hosts )) {
-    $hosts = module_invoke_all('csp_nonce_hosts');
-    drupal_alter('csp_nonce_hosts', $hosts);
+    $hosts = module_invoke_all('d7csp_hosts');
+    drupal_alter('d7csp_hosts', $hosts);
   }
   return $hosts;
 }
 
 /**
- * Implements hook_csp_nonce_hosts().
+ * Implements hook_d7csp_hosts().
  */
-function csp_nonce_csp_nonce_hosts(): array {
-  $hosts['script-src'][] = "'nonce-" . csp_nonce() . "'";
+function d7csp_d7csp_hosts(): array {
+  $hosts['script-src'][] = "'nonce-" . d7csp_nonce() . "'";
   return $hosts;
 }
 
 /**
  * Implements hook_seckit_options_alter().
  */
-function csp_nonce_seckit_options_alter(array &$options) {
+function d7csp_seckit_options_alter(array &$options) {
   $csp = &$options['seckit_xss']['csp'];
-  $hosts = csp_nonce_hosts();
+  $hosts = d7csp_hosts();
   foreach ($hosts as $directive => $host_list) {
     if (empty($csp[$directive])) {
       $csp[$directive] = $csp['default-src'];
