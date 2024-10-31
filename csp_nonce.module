@@ -39,13 +39,37 @@ function csp_nonce_pre_render_scripts(array $elements) {
 }
 
 /**
+ * Collect all hosts configured by modules and themes.
+ *
+ * @return array
+ */
+function csp_nonce_hosts(){
+  $hosts = &drupal_static(__FUNCTION__);
+  if (is_null($hosts )) {
+    $hosts = module_invoke_all('csp_nonce_hosts');
+    drupal_alter('csp_nonce_hosts', $hosts);
+  }
+  return $hosts;
+}
+
+/**
+ * Implements hook_csp_nonce_hosts().
+ */
+function csp_nonce_csp_nonce_hosts(): array {
+  $hosts['script-src'][] = "'nonce-" . csp_nonce() . "'";
+  return $hosts;
+}
+
+/**
  * Implements hook_seckit_options_alter().
  */
 function csp_nonce_seckit_options_alter(array &$options) {
   $csp = &$options['seckit_xss']['csp'];
-  if (empty($csp['script-src'])) {
-    $csp['script-src'] = $csp['default-src'];
+  $hosts = csp_nonce_hosts();
+  foreach ($hosts as $directive => $host_list) {
+    if (empty($csp[$directive])) {
+      $csp[$directive] = $csp['default-src'];
+    }
+    $csp[$directive] .= ' ' . implode(' ', $host_list);
   }
-  $directives = "'self' 'nonce-". csp_nonce() ."'";
-  $csp['script-src'] = str_replace("'self'", $directives, $csp['script-src']);
 }
