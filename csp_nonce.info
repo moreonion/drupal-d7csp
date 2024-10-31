@@ -1,0 +1,6 @@
+name = CSP Nonce
+description = Add a CSP nonce to the HTTP headers and all inline script tags.
+core =7.x
+package = Security
+
+dependencies[] = seckit

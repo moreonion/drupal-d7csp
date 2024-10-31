@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Implement hooks and callbacks for the csp_nonce module.
+ */
+
+/**
+ * Generate a nonce for the current page load.
+ */
+function csp_nonce(): string {
+  $nonce = &drupal_static(__FUNCTION__);
+  if (!$nonce) {
+    $nonce = drupal_random_key(16);
+  }
+  return $nonce;
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function csp_nonce_element_info_alter(&$type) {
+  $type['scripts']['#pre_render'][] = 'csp_nonce_pre_render_scripts';
+}
+
+/**
+ * Callback for #pre_render on scripts.
+ *
+ * Add a nonce attribute to the script tag.
+ */
+function csp_nonce_pre_render_scripts(array $elements) {
+  $nonce = csp_nonce();
+  foreach (['scripts', 'settings'] as $type) {
+    foreach (element_children($elements[$type]) as $key) {
+      $elements[$type][$key]['#attributes']['nonce'] = $nonce;
+    }
+  }
+  return $elements;
+}
+
+/**
+ * Implements hook_seckit_options_alter().
+ */
+function csp_nonce_seckit_options_alter(array &$options) {
+  $csp = &$options['seckit_xss']['csp'];
+  if (empty($csp['script-src'])) {
+    $csp['script-src'] = $csp['default-src'];
+  }
+  $directives = "'self' 'nonce-". csp_nonce() ."'";
+  $csp['script-src'] = str_replace("'self'", $directives, $csp['script-src']);
+}
