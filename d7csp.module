@@ -29,6 +29,9 @@ function d7csp_element_info_alter(&$type) {
  * Add a nonce attribute to the script tag.
  */
 function d7csp_pre_render_scripts(array $elements) {
+  if (current_path() == 'system/ajax') {
+    return $elements;
+  }
   $nonce = d7csp_nonce();
   foreach (['scripts', 'settings'] as $type) {
     foreach (element_children($elements[$type]) as $key) {
