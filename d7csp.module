@@ -66,10 +66,22 @@ function d7csp_d7csp_hosts(): array {
 function d7csp_seckit_options_alter(array &$options) {
   $csp = &$options['seckit_xss']['csp'];
   $hosts = d7csp_hosts();
-  foreach ($hosts as $directive => $host_list) {
-    if (empty($csp[$directive])) {
-      $csp[$directive] = $csp['default-src'];
+  // Merge all configured src-directives with the hook-defined hosts.
+  foreach ($csp as $directive => $config) {
+    if (substr($directive, -4) != '-src') {
+      continue;
     }
-    $csp[$directive] .= ' ' . implode(' ', $host_list);
+    $seckit_hosts = array_filter(explode(' ', $config));
+    $hosts[$directive] = array_merge($seckit_hosts, $hosts[$directive] ?? []);
+  }
+  // Merge default-src into all other src-directives.
+  foreach ($hosts as $directive => $host_list) {
+    if ($directive != 'default-src') {
+      $hosts[$directive] = array_merge($hosts['default-src'], $host_list);
+    }
+  }
+  // Put everything back together.
+  foreach ($hosts as $directive => $host_list) {
+    $csp[$directive] = ' ' . implode(' ', array_unique($host_list));
   }
 }
