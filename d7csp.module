@@ -88,3 +88,15 @@ function d7csp_seckit_options_alter(array &$options) {
     $csp[$directive] = ' ' . implode(' ', array_unique($host_list));
   }
 }
+
+/**
+ * Implements hook_html_head_alter().
+ */
+function d7csp_html_head_alter(array &$head_elements) {
+  $nonce = d7csp_nonce();
+  foreach ($head_elements as &$element) {
+    if (($element['#tag'] ?? '') == 'script') {
+      $element['#attributes']['nonce'] = $nonce;
+    }
+  }
+}
