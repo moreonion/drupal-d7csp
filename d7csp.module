@@ -100,3 +100,34 @@ function d7csp_html_head_alter(array &$head_elements) {
     }
   }
 }
+
+/**
+ * Implements hook_filter_info().
+ */
+function d7csp_filter_info() {
+  $filters = [];
+  $filters['d7csp_add_nonce'] = [
+    'title' => t('Add CSP nonces'),
+    'description' => t('Add a nonce to all script tags.'),
+    'process callback' => 'd7csp_filter_add_nonce',
+    'tips callback' => 'd7csp_filter_tips',
+  ];
+  return $filters;
+}
+
+/**
+ * Callback for d7csp_add_nonce filter.
+ */
+function d7csp_filter_tips($filter, $format, $long = FALSE) {
+  return t('Put this at the end after markup has been generated.');
+}
+
+/**
+ * Add nonces to all script tags.
+ *
+ * Callback for d7csp_add_nonce filter.
+ */
+function d7csp_filter_add_nonce($text) {
+  $nonce = d7csp_nonce();
+  return preg_replace('/<script/', '<script nonce="' . $nonce . '"', $text);
+}
