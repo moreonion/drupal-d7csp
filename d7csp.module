@@ -131,3 +131,7 @@ function d7csp_filter_add_nonce($text) {
   $nonce = d7csp_nonce();
   return preg_replace('/<script/', '<script nonce="' . $nonce . '"', $text);
 }
+
+if (module_exists('wysiwyg')) {
+  require_once 'modules/wysiwyg.php';
+}
