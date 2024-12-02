@@ -22,6 +22,8 @@ function wysiwyg_d7csp_hosts() {
       }
     }
   }
+  // Needed for ckeditor 4.
+  $hosts['script-src-attr'][] = "'unsafe-inline'";
   return $hosts;
 }
 
