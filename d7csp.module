@@ -82,6 +82,11 @@ function d7csp_seckit_options_alter(array &$options) {
     if ($directive != 'default-src') {
       $hosts[$directive] = array_merge($hosts['default-src'], $host_list);
     }
+    if (in_array("'unsafe-inline'", $hosts[$directive])) {
+      $hosts[$directive] = array_filter($hosts[$directive], function($item) {
+        return substr($item, 0, 7) !== "'nonce-";
+      });
+    }
   }
   // Put everything back together.
   foreach ($hosts as $directive => $host_list) {
