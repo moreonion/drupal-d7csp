@@ -10,5 +10,6 @@
  */
 function recaptcha_d7csp_hosts() {
   $hosts['frame-src'][] = 'https://www.google.com';
+  $hosts['script-src'][] = 'https://www.google.com';
   return $hosts;
 }
