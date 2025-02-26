@@ -77,16 +77,35 @@ function d7csp_seckit_options_alter(array &$options) {
     $seckit_hosts = array_filter(explode(' ', $config));
     $hosts[$directive] = array_merge($seckit_hosts, $hosts[$directive] ?? []);
   }
-  // Merge default-src into all other src-directives.
   foreach ($hosts as $directive => $host_list) {
+    // Merge default-src.
     if ($directive != 'default-src') {
       $hosts[$directive] = array_merge($hosts['default-src'], $host_list);
     }
+    // If 'unsafe-inline' is used, nonces don’t work. Switch to allowing everything instead.
     if (in_array("'unsafe-inline'", $hosts[$directive])) {
       $hosts[$directive] = array_filter($hosts[$directive], function($item) {
         return substr($item, 0, 7) !== "'nonce-";
       });
+      $hosts[$directive][] = 'http:';
+      $hosts[$directive][] = 'ws:';
     }
+    // Remove all host-sources when they are already covered by a protocol.
+    $protocols = [];
+    foreach (['http:', 'ws:'] as $protocol) {
+      if (in_array($protocol, $hosts[$directive])) {
+        $protocols[] = $protocol . '//';
+        $protocols[] = substr($protocol, 0, -1) . 's://';
+      }
+    }
+    $hosts[$directive] = array_filter($hosts[$directive], function($item) use ($protocols) {
+      foreach ($protocols as $p) {
+        if (substr($item, 0, strlen($p)) === $p) {
+          return FALSE;
+        }
+      }
+      return TRUE;
+    });
   }
   // Put everything back together.
   foreach ($hosts as $directive => $host_list) {
