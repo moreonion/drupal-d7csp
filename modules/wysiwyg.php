@@ -12,13 +12,14 @@ function wysiwyg_d7csp_hosts() {
   $hosts = [];
   wysiwyg_initialize_cache();
   $cache = cache_get('wysiwyg_css');
-  foreach (list_themes() as $theme) {
-    foreach (($cache->data[$theme->name]['files'] ?? []) as $url) {
-      $parts = parse_url($url);
-      if ($parts['host'] && $parts['host'] != $_SERVER['HTTP_HOST']) {
-        $hosts['style-src'][] = $parts['scheme'] . '://' . $parts['host'];
-        $hosts['font-src'][] = $parts['scheme'] . '://' . $parts['host'];
-        $hosts['img-src'][] = $parts['scheme'] . '://' . $parts['host'];
+  $themes = list_themes();
+  foreach (array_keys($cache->data) as $theme_name) {
+    $theme = $themes[$theme_name];
+    if ($theme->engine == 'phptemplate') {
+      require_once dirname($theme->filename) . '/template.php';
+      $alter_fn = "{$theme->name}_d7csp_hosts_alter";
+      if (function_exists($alter_fn)) {
+        $alter_fn($hosts);
       }
     }
   }
