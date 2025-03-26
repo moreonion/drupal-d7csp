@@ -10,6 +10,8 @@
  */
 function wysiwyg_d7csp_hosts() {
   $hosts = [];
+  // Needed for ckeditor 4.
+  $hosts['script-src-attr'][] = "'unsafe-inline'";
   wysiwyg_initialize_cache();
   if (!($cache = cache_get('wysiwyg_css'))) {
     // No wysiwyg profile was configured to use a css theme.
@@ -26,8 +28,6 @@ function wysiwyg_d7csp_hosts() {
       }
     }
   }
-  // Needed for ckeditor 4.
-  $hosts['script-src-attr'][] = "'unsafe-inline'";
   return $hosts;
 }
 
