@@ -11,7 +11,10 @@
 function wysiwyg_d7csp_hosts() {
   $hosts = [];
   wysiwyg_initialize_cache();
-  $cache = cache_get('wysiwyg_css');
+  if (!($cache = cache_get('wysiwyg_css'))) {
+    // No wysiwyg profile was configured to use a css theme.
+    return $hosts;
+  }
   $themes = list_themes();
   foreach (array_keys($cache->data) as $theme_name) {
     $theme = $themes[$theme_name];
