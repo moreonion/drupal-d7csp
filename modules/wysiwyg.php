@@ -18,8 +18,8 @@ function wysiwyg_d7csp_hosts() {
   }, wysiwyg_profile_load_all())));
   foreach ($css_themes as $theme_name) {
     $theme = $themes[$theme_name];
-    if ($theme->engine == 'phptemplate') {
-      require_once dirname($theme->filename) . '/template.php';
+    if (file_exists($template_php = dirname($theme->filename) . '/template.php')) {
+      require_once $template_php;
       $alter_fn = "{$theme->name}_d7csp_hosts_alter";
       if (function_exists($alter_fn)) {
         $alter_fn($hosts);
