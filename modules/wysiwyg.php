@@ -12,6 +12,9 @@
  */
 function _d7csp_get_base_themes(string $theme): array {
   $themes = list_themes();
+  if (!isset($themes[$theme])) {
+    return [];
+  }
   $result = [$theme];
   while ($base_theme = $themes[$theme]->base_theme ?? NULL) {
     $theme = $base_theme;
